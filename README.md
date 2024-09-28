@@ -1,4 +1,4 @@
-#List Management Campaign Monitor 
+## List Management Campaign Monitor 
 
 This project is a simple React and Node.js application that integrates with the Campaign Monitor API to manage subscribers. The app includes features for displaying, adding, and deleting subscribers using a CRUD table interface. It utilizes several libraries and follows a modular code structure to ensure maintainability and scalability.
 
@@ -36,17 +36,17 @@ The backend handles API requests for getting, adding, and deleting subscribers v
 
 #### 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/campaign-monitor-app.git
+git clone https://github.com/SarafoglouAth/List-Management-Campaign-Monitor.git
 ```
 
 #### 2. Backend Setup:
 ```bash
-cd campaign-monitor-app/backend
+cd List-Management-Campaign-Monitor/backend
 npm install
 ```
 
 #### 3. Create a .env file in the root of the backend directory with your Campaign Monitor API key and List ID:
-:
+
 ```bash
 CAMPAIGN_MONITOR_API_KEY=your_api_key_here
 CAMPAIGN_MONITOR_LIST_ID=your_list_id_here
@@ -65,7 +65,6 @@ npm install
 
 #### 6. Start the React development server:
 ```bash
-cd ../frontend
 npm run dev
 ```
 
