@@ -57,10 +57,14 @@ export default function ListManagement() {
   // Effect to handle responses from CRUD operations
   useEffect(() => {
     if (errorCRUD) {
+      let errorMsg = errorCRUD;
+      if (errorCRUD === "[object Object]") {
+        errorMsg = "There might be a problem with your keys";
+      }
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: errorCRUD,
+        detail: errorMsg,
         life: 3000,
       });
       reset(false); // Reset error state
