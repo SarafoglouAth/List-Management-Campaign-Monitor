@@ -25,12 +25,14 @@ The backend handles API requests for getting, adding, and deleting subscribers v
 - **primereact**: A UI component library to build the CRUD table.
 - **primeflex**: Utility-first CSS framework for responsive layout.
 - **primeicons**: Icon library used in the application.
+- **Google Analytics** : Integrated for tracking user interactions. Make sure to input your Google Analytics key to activate this feature.
 
 ## Getting Started
 
 ### Prerequisites
 - [Node.js and npm](https://nodejs.org/) installed . Please use Node -v 20.11.1 ! 
 - Campaign Monitor API credentials (API key and List ID).
+- Google Analytics key (optional but recommended for tracking).
 
 ### Installation
 
@@ -63,8 +65,13 @@ cd ../frontend
 npm install
 ```
 
-#### 6. Start the React development server:
+
+#### 6. Add your Google Analytics key:
+```bash
+In the frontend, find the section where Google Analytics is integrated and input your key to activate tracking.
+```
+
+#### 7. Start the React development server:
 ```bash
 npm run dev
 ```
-

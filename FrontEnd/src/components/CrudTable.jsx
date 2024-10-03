@@ -13,6 +13,8 @@ import { InputText } from "primereact/inputtext";
 import useCRUD from "../hooks/useCRUD"; // Custom hook for CRUD operations
 import Cv from "./Cv"; // Component for showing CV
 
+import { trackAPIError, trackTimeLookedAtCV ,trackSubscribers } from "../hooks/GA4_Actions.js";
+
 export default function ListManagement() {
   // Define an empty subscriber object
   let emptyProduct = {
@@ -28,6 +30,7 @@ export default function ListManagement() {
   const [showCVDialog, setShowCVDialog] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [globalFilter, setGlobalFilter] = useState(null);
+  const [startTime, setStartTime] = useState(null);
   const toast = useRef(null); // Reference for Toast notifications
   const dt = useRef(null); // Reference for DataTable
   const [action, setAction] = useState({
@@ -35,6 +38,20 @@ export default function ListManagement() {
     product: null,
     url: `/getAllSubscribers`, // API endpoint for fetching subscribers
   });
+
+  const getEmailType = (email) => {
+    if (
+      email &&
+      (email.includes("@gmail") ||
+        email.includes("@yahoo") ||
+        email.includes("@hotmail") ||
+        email.includes("@outlook"))
+    ) {
+      return "personal";
+    } else {
+      return "generic";
+    }
+  };
 
   // Use custom hook for CRUD operations
   const { loadingCRUD, errorCRUD, response, reset } = useCRUD(
@@ -59,6 +76,10 @@ export default function ListManagement() {
     if (errorCRUD) {
       let errorMsg = errorCRUD;
       if (errorCRUD === "[object Object]") {
+        trackAPIError(
+          "There might be a problem with your keys",
+          action?.actionType
+        );
         errorMsg = "There might be a problem with your keys";
       }
       toast.current.show({
@@ -82,9 +103,11 @@ export default function ListManagement() {
         case "create":
           messageDetail = response?.res?.data || " Created successfully";
           setProductDialog(false);
+          trackSubscribers(products.length, "create");
           break;
         case "delete":
           messageDetail = response?.res?.data || " Deleted successfully";
+          trackSubscribers(products.length, "delete");
           break;
         default:
           break;
@@ -101,6 +124,9 @@ export default function ListManagement() {
 
       if (response.actionType !== "get") {
         setShowCVDialog(true); // Show CV dialog if not a 'get' action
+        if (!startTime) {
+          setStartTime(Date.now());
+        }
         setTimeout(() => {
           reset(true); // Reset state after 60 seconds
         }, 60000);
@@ -138,6 +164,16 @@ export default function ListManagement() {
     }
 
     // Set action to create a new subscriber
+    const EmailType = getEmailType(product.EmailAddress);
+    let elapsedTime = 0;
+    if (startTime) {
+      // Calculate time elapsed
+      elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+      console.log(`Time passed: ${elapsedTime} seconds`);
+    }
+    setStartTime(null);
+    product.EmailType = EmailType;
+    product.TimeToCompletion = elapsedTime;
     setAction({ actionType: "create", product, url: `/addOneSubscriber` });
   };
 
@@ -149,6 +185,13 @@ export default function ListManagement() {
 
   // Delete a subscriber
   const deleteProduct = () => {
+    const EmailType = getEmailType(product.EmailAddress);
+    product.EmailType = EmailType;
+    const ProductIndex =
+      products.findIndex((p) => p.EmailAddress === product.EmailAddress) + 1;
+    console.log("ProductIndex", ProductIndex);
+    const indexInArray = `${ProductIndex}/${products.length}`;
+    product.position = indexInArray;
     setAction({
       actionType: "delete",
       product,
@@ -169,6 +212,19 @@ export default function ListManagement() {
     let _product = { ...product };
     _product[`${name}`] = val;
     setProduct(_product);
+
+    if (!startTime) {
+      setStartTime(Date.now());
+    }
+  };
+  const hideCvDialog = () => {
+    setShowCVDialog((prev) => !prev);
+    if (startTime) {
+      const elapsedTime = (Date.now() - startTime) / 1000; // Convert to seconds
+      console.log(`Time passed: ${elapsedTime} seconds`);
+      trackTimeLookedAtCV(elapsedTime);
+      setStartTime(null);
+    }
   };
 
   // Define the left toolbar template
@@ -274,6 +330,7 @@ export default function ListManagement() {
   return (
     <div className="py-8">
       <h1>{errorCRUD}</h1>
+    
       <div className="flex justify-content-start text-center w-full flex-column gap-2">
         <h4 className="m-0">Disclaimer </h4>
         <p>
@@ -373,7 +430,7 @@ export default function ListManagement() {
       </Dialog>
       <Dialog
         visible={showCVDialog}
-        onHide={() => setShowCVDialog((prev) => !prev)}
+        onHide={() => hideCvDialog()}
         breakpoints={{ "960px": "75vw", "641px": "90vw" }}
         header="Have a look at my CV while you wait "
         modal
